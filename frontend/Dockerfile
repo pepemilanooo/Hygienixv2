@@ -5,10 +5,10 @@ WORKDIR /app
 # Copia package files
 COPY package*.json ./
 
-# Installa serve globalmente per evitare problemi
+# Installa serve globalmente
 RUN npm install -g serve
 
-# Installa dipendenze (npm install per risolvere conflitti versione)
+# Installa dipendenze
 RUN npm install
 
 # Copia tutto il codice
@@ -17,8 +17,8 @@ COPY . .
 # Build
 RUN npm run build
 
-# Espone la porta (Railway setterà $PORT)
+# Espone porta
 EXPOSE 3000
 
-# Usa serve diretto
-CMD ["serve", "-s", "dist", "-l", "3000"]
+# Usa shell per espandere $PORT correttamente
+CMD sh -c "serve -s dist -l tcp://0.0.0.0:${PORT:-3000}"
