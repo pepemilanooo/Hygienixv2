@@ -1,0 +1,128 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password      String
+  nome          String
+  cognome       String
+  telefono      String?
+  ruolo         String    @default("TECNICO")
+  attivo        Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  interventions Intervention[]
+  @@map("users")
+}
+
+model Client {
+  id              String   @id @default(uuid())
+  ragioneSociale  String
+  tipo            String   @default("AZIENDA")
+  piva            String?
+  codiceFiscale   String?
+  email           String?
+  telefono        String?
+  telefonoSecondario String?
+  indirizzoLegale String?
+  citta           String?
+  cap             String?
+  provincia       String?
+  referente       String?
+  telefonoReferente String?
+  emailReferente  String?
+  note            String?
+  attivo          Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  locations       Location[]
+  interventions   Intervention[]
+  @@map("clients")
+}
+
+model Location {
+  id                String   @id @default(uuid())
+  clientId          String
+  nomeSede          String
+  tipoStruttura     String   @default("COMMERCIALE")
+  indirizzo         String
+  citta             String
+  cap               String
+  provincia         String
+  latitudine        Float?
+  longitudine       Float?
+  numeroPiani       Int?
+  pianoSpecifico    String?
+  scala             String?
+  interno           String?
+  mqTotali          Float?
+  mqInterni         Float?
+  mqEsterni         Float?
+  tipoAccesso       String   @default("PORTINERIA")
+  noteAccesso       String?
+  contattoPortineria String?
+  telefonoPortineria String?
+  codiceAccesso     String?
+  geofenceRadius    Int      @default(100)
+  noteStruttura     String?
+  attivo            Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  client            Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  interventions     Intervention[]
+  @@map("locations")
+}
+
+model Intervention {
+  id                String   @id @default(uuid())
+  clientId          String
+  locationId        String
+  tecnicoId         String
+  dataProgrammata   DateTime
+  dataEsecuzione    DateTime?
+  dataFine          DateTime?
+  stato             String   @default("PIANIFICATO")
+  priorita          String   @default("NORMALE")
+  tipoIntervento    String?
+  descrizione       String?
+  noteTecnico       String?
+  noteInterne       String?
+  risultato         String?
+  temperatura       Float?
+  umidita           Float?
+  condizioniMeteo   String?
+  checkInLat        Float?
+  checkInLng        Float?
+  checkOutLat       Float?
+  checkOutLng       Float?
+  firmaTecnicoUrl   String?
+  firmaClienteUrl   String?
+  nomeFirmaCliente  String?
+  reportPdfUrl      String?
+  datiSopralluogo   String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  client            Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  location          Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  tecnico           User     @relation(fields: [tecnicoId], references: [id])
+  photos            Photo[]
+  @@map("interventions")
+}
+
+model Photo {
+  id            String     @id @default(uuid())
+  interventionId String
+  fotoUrl       String
+  tipo          String     @default("DURANTE")
+  descrizione   String?
+  createdAt     DateTime   @default(now())
+  intervention  Intervention @relation(fields: [interventionId], references: [id], onDelete: Cascade)
+  @@map("photos")
+}
