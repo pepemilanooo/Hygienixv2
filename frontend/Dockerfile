@@ -5,17 +5,20 @@ WORKDIR /app
 # Copia package files
 COPY package*.json ./
 
+# Installa serve globalmente per evitare problemi
+RUN npm install -g serve
+
 # Installa dipendenze
 RUN npm ci
 
-# Copia codice sorgente
+# Copia tutto il codice
 COPY . .
 
-# Build applicazione
+# Build
 RUN npm run build
 
-# Espone porta
+# Espone la porta (Railway setterà $PORT)
 EXPOSE 3000
 
-# Serve con npx serve
-CMD ["npx", "serve", "-s", "dist", "-p", "3000"]
+# Usa serve diretto
+CMD ["serve", "-s", "dist", "-l", "3000"]
