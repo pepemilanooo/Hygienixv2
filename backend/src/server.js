@@ -22,6 +22,7 @@ app.use('/api/locations', require('./routes/locations'));
 app.use('/api/interventions', require('./routes/interventions'));
 app.use('/api/upload', require('./routes/upload'));
 app.use('/api/dashboard', require('./routes/dashboard'));
+app.use('/api/reports', require('./routes/reports'));
 
 app.use((err, req, res, next) => {
   console.error('Error:', err);
