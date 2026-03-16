@@ -1,5 +1,8 @@
 FROM node:20-slim
 
+# Installa OpenSSL e altre dipendenze di sistema richieste da Prisma
+RUN apt-get update -y && apt-get install -y openssl libssl-dev && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 # Copia prima i file necessari
