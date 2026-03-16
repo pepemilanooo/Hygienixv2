@@ -1,0 +1,11 @@
+#!/bin/bash
+set -e
+
+echo "=== Creazione routes backend ==="
+
+# Routes contratti
+cat > backend/src/routes/contratti.js << 'EOF'
+const express=require('express');const{PrismaClient}=require('@prisma/client');const{authenticate,requireRole}=require('../middleware/auth');const multer=require('multer');const path=require('path');const fs=require('fs');const router=express.Router();const prisma=new PrismaClient();const storage=multer.diskStorage({destination:(req,file,cb)=>{const uploadDir=path.join(__dirname,'../../uploads/contratti');if(!fs.existsSync(uploadDir))fs.mkdirSync(uploadDir,{recursive:true});cb(null,uploadDir);},filename:(req,file,cb)=>{cb(null,'contratto-'+Date.now()+path.extname(file.originalname));}});const upload=multer({storage,fileFilter:(req,file,cb)=>{if(file.mimetype==='application/pdf')cb(null,true);else cb(new Error('Solo PDF'),false);},limits:{fileSize:20*1024*1024}});router.get('/',authenticate,async(req,res)=>{try{const{clientId}=req.query;const where={};if(clientId)where.clientId=clientId;const contratti=await prisma.contratto.findMany({where,include:{client:{select:{id:true,ragioneSociale:true}}},orderBy:{dataInizio:'desc'}});res.json(contratti);}catch(error){res.status(500).json({error:error.message});}});router.post('/',authenticate,requireRole('ADMIN','OPERATORE'),async(req,res)=>{try{const data=req.body;data.dataInizio=new Date(data.dataInizio);if(data.dataFine)data.dataFine=new Date(data.dataFine);const contratto=await prisma.contratto.create({data});res.status(201).json(contratto);}catch(error){res.status(500).json({error:error.message});}});router.put('/:id',authenticate,requireRole('ADMIN','OPERATORE'),async(req,res)=>{try{const data=req.body;delete data.id;if(data.dataInizio)data.dataInizio=new Date(data.dataInizio);if(data.dataFine)data.dataFine=new Date(data.dataFine);const contratto=await prisma.contratto.update({where:{id:req.params.id},data});res.json(contratto);}catch(error){res.status(500).json({error:error.message});}});router.delete('/:id',authenticate,requireRole('ADMIN'),async(req,res)=>{try{await prisma.contratto.delete({where:{id:req.params.id}});res.json({message:'Contratto eliminato'});}catch(error){res.status(500).json({error:error.message});}});module.exports=router;
+EOF
+
+echo "Routes create!"

@@ -26,6 +26,8 @@ app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/reports', require('./routes/reports'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/customer', require('./routes/customerPortal'));
+app.use('/api/tipi-intervento', require('./routes/tipiIntervento'));
+app.use('/api/contratti', require('./routes/contratti'));
 
 app.use((err, req, res, next) => {
   console.error('Error:', err);

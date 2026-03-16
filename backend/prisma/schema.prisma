@@ -47,6 +47,7 @@ model Client {
   locations       Location[]
   interventions   Intervention[]
   documents       Document[]
+  contratti       Contratto[]
   appointmentRequests AppointmentRequest[]
   @@map("clients")
 }
@@ -84,11 +85,44 @@ model Location {
   @@map("locations")
 }
 
+model TipoIntervento {
+  id            String   @id @default(uuid())
+  codice        String   @unique  // es: DIS01, DER02
+  nome          String
+  descrizione   String?
+  colore        String   @default("#2563eb") // Per calendario
+  schedaPdfUrl  String?  // URL scheda tecnica PDF
+  attivo        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  interventions Intervention[]
+  @@map("tipi_intervento")
+}
+
+model Contratto {
+  id            String   @id @default(uuid())
+  clientId      String
+  numero        String   @unique
+  oggetto       String
+  dataInizio    DateTime
+  dataFine      DateTime?
+  importo       Float?
+  frequenza     String   @default("MENSILE") // MENSILE, TRIMESTRALE, SEMESTRALE, ANNUALE
+  note          String?
+  fileUrl       String?  // PDF contratto
+  attivo        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  client        Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  @@map("contratti")
+}
+
 model Intervention {
   id                String   @id @default(uuid())
   clientId          String
   locationId        String
   tecnicoId         String
+  tipoInterventoId  String?
   dataProgrammata   DateTime
   dataEsecuzione    DateTime?
   dataFine          DateTime?
@@ -117,6 +151,7 @@ model Intervention {
   client            Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
   location          Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
   tecnico           User     @relation(fields: [tecnicoId], references: [id])
+  tipoInterventoRef TipoIntervento? @relation(fields: [tipoInterventoId], references: [id])
   photos            Photo[]
   @@map("interventions")
 }

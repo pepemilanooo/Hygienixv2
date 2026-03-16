@@ -37,7 +37,7 @@ router.get('/:id', async (req, res) => {
       include: { 
         locations: true, 
         interventions: { orderBy: { dataProgrammata: 'desc' }, take: 10 },
-        contracts: true
+        contratti: true
       }
     });
     if (!client) return res.status(404).json({ error: 'Cliente non trovato' });
