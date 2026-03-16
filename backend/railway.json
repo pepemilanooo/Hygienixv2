@@ -1,6 +1,12 @@
 {
+  "build": {
+    "builder": "nixpacks"
+  },
   "deploy": {
-    "startCommand": "npx prisma migrate deploy && npm start",
-    "healthcheckPath": "/api/health"
+    "startCommand": "npm run db:deploy && npm start",
+    "healthcheckPath": "/api/health",
+    "healthcheckTimeout": 100,
+    "restartPolicyType": "on_failure",
+    "restartPolicyMaxRetries": 10
   }
 }
