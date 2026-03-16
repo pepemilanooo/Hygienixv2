@@ -8,8 +8,8 @@ COPY package*.json ./
 # Installa serve globalmente per evitare problemi
 RUN npm install -g serve
 
-# Installa dipendenze
-RUN npm ci
+# Installa dipendenze (npm install per risolvere conflitti versione)
+RUN npm install
 
 # Copia tutto il codice
 COPY . .
