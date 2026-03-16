@@ -4,9 +4,9 @@
     "builder": "nixpacks"
   },
   "deploy": {
-    "startCommand": "npm run build && npm start",
+    "startCommand": "npx serve -s dist -p $PORT",
     "healthcheckPath": "/",
-    "healthcheckTimeout": 120,
+    "healthcheckTimeout": 60,
     "restartPolicyType": "on_failure",
     "restartPolicyMaxRetries": 5
   }
