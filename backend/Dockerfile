@@ -22,4 +22,4 @@ COPY . .
 EXPOSE 5000
 
 # Comando di avvio
-CMD npx prisma migrate deploy && node src/server.js
+CMD npx prisma migrate deploy && node prisma/seed.js && node src/server.js
