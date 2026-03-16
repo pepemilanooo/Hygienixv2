@@ -1,5 +1,5 @@
 const express = require('express');
-const { authenticate, authorize } = require('../middleware/auth');
+const { authenticate, requireRole } = require('../middleware/auth');
 const notificationService = require('../services/notificationService');
 const { PrismaClient } = require('@prisma/client');
 
@@ -7,7 +7,7 @@ const router = express.Router();
 const prisma = new PrismaClient();
 
 // POST /api/notifications/send - Invia notifica manuale (solo admin)
-router.post('/send', authenticate, authorize('ADMIN'), async (req, res) => {
+router.post('/send', authenticate, requireRole('ADMIN'), async (req, res) => {
   try {
     const { interventionId, type } = req.body;
     
@@ -37,13 +37,13 @@ router.post('/send', authenticate, authorize('ADMIN'), async (req, res) => {
 });
 
 // POST /api/notifications/test - Test configurazione email/SMS (solo admin)
-router.post('/test', authenticate, authorize('ADMIN'), async (req, res) => {
+router.post('/test', authenticate, requireRole('ADMIN'), async (req, res) => {
   try {
     const { type, to } = req.body;
     
     if (type === 'EMAIL') {
       const nodemailer = require('nodemailer');
-      const transporter = nodemailer.createTransporter({
+      const transporter = nodemailer.createTransport({
         host: process.env.SMTP_HOST,
         port: process.env.SMTP_PORT,
         auth: {
