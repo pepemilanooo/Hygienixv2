@@ -29,25 +29,25 @@ class NotificationService {
         include: {
           client: true,
           location: true,
-          technician: { include: { user: true } }
+          tecnico: true
         }
       });
 
       if (!intervention || !intervention.client.email) return;
 
-      const date = new Date(intervention.date).toLocaleDateString('it-IT');
-      const time = intervention.time || 'da concordare';
+      const date = new Date(intervention.dataProgrammata).toLocaleDateString('it-IT');
+      const time = intervention.dataProgrammata?.toLocaleTimeString('it-IT', {hour: '2-digit', minute:'2-digit'}) || 'da concordare';
 
       const emailHtml = `
         <h2>Conferma Appuntamento - Hygienix</h2>
-        <p>Gentile ${intervention.client.name},</p>
+        <p>Gentile ${intervention.client.ragioneSociale},</p>
         <p>Le confermiamo l'appuntamento per:</p>
         <ul>
           <li><strong>Data:</strong> ${date}</li>
           <li><strong>Ora:</strong> ${time}</li>
-          <li><strong>Sede:</strong> ${intervention.location?.name || 'Sede principale'}</li>
-          <li><strong>Indirizzo:</strong> ${intervention.location?.address || 'Da confermare'}</li>
-          <li><strong>Tecnico:</strong> ${intervention.technician?.user.name || 'Da assegnare'}</li>
+          <li><strong>Sede:</strong> ${intervention.location?.nomeSede || 'Sede principale'}</li>
+          <li><strong>Indirizzo:</strong> ${intervention.location?.indirizzo || 'Da confermare'}</li>
+          <li><strong>Tecnico:</strong> ${intervention.tecnico?.nome || 'Da assegnare'}</li>
         </ul>
         <p>Per qualsiasi modifica contatti il numero: ${process.env.COMPANY_PHONE || '0574-XXX-XXX'}</p>
         <p>Grazie per aver scelto Hygienix!</p>
@@ -79,18 +79,18 @@ class NotificationService {
         }
       });
 
-      if (!intervention || !intervention.client.phone) return;
+      if (!intervention || !intervention.client.telefono) return;
 
-      const date = new Date(intervention.date).toLocaleDateString('it-IT');
-      const message = `Hygienix: Promemoria intervento domani ${date} presso ${intervention.location?.name || 'sua sede'}. Per modifiche: ${process.env.COMPANY_PHONE || '0574-XXX-XXX'}`;
+      const date = new Date(intervention.dataProgrammata).toLocaleDateString('it-IT');
+      const message = `Hygienix: Promemoria intervento domani ${date} presso ${intervention.location?.nomeSede || 'sua sede'}. Per modifiche: ${process.env.COMPANY_PHONE || '0574-XXX-XXX'}`;
 
       await twilioClient.messages.create({
         body: message,
         from: process.env.TWILIO_PHONE,
-        to: intervention.client.phone
+        to: intervention.client.telefono
       });
 
-      console.log(`SMS inviato a ${intervention.client.phone}`);
+      console.log(`SMS inviato a ${intervention.client.telefono}`);
     } catch (error) {
       console.error('Errore invio SMS:', error);
     }
@@ -104,32 +104,32 @@ class NotificationService {
         include: {
           client: true,
           location: true,
-          technician: { include: { user: true } }
+          tecnico: true
         }
       });
 
-      if (!intervention?.technician?.user.email) return;
+      if (!intervention?.tecnico?.email) return;
 
-      const date = new Date(intervention.date).toLocaleDateString('it-IT');
-      const time = intervention.time || 'da concordare';
+      const date = new Date(intervention.dataProgrammata).toLocaleDateString('it-IT');
+      const time = intervention.dataProgrammata?.toLocaleTimeString('it-IT', {hour: '2-digit', minute:'2-digit'}) || 'da concordare';
 
       const emailHtml = `
         <h2>Nuovo Intervento Assegnato</h2>
         <p><strong>Data:</strong> ${date} - ${time}</p>
-        <p><strong>Cliente:</strong> ${intervention.client.name}</p>
-        <p><strong>Indirizzo:</strong> ${intervention.location?.address || 'N/A'}</p>
-        <p><strong>Note:</strong> ${intervention.notes || 'Nessuna nota'}</p>
+        <p><strong>Cliente:</strong> ${intervention.client.ragioneSociale}</p>
+        <p><strong>Indirizzo:</strong> ${intervention.location?.indirizzo || 'N/A'}</p>
+        <p><strong>Note:</strong> ${intervention.noteTecnico || 'Nessuna nota'}</p>
         <p>Accedi all'app per confermare: ${process.env.FRONTEND_URL || 'https://hygienix.app'}</p>
       `;
 
       await emailTransporter.sendMail({
         from: `"Hygienix" <${process.env.SMTP_USER}>`,
-        to: intervention.technician.user.email,
-        subject: `Nuovo Intervento - ${intervention.client.name}`,
+        to: intervention.tecnico.email,
+        subject: `Nuovo Intervento - ${intervention.client.ragioneSociale}`,
         html: emailHtml
       });
 
-      console.log(`Notifica tecnico inviata a ${intervention.technician.user.email}`);
+      console.log(`Notifica tecnico inviata a ${intervention.tecnico.email}`);
     } catch (error) {
       console.error('Errore notifica tecnico:', error);
     }
@@ -144,21 +144,20 @@ class NotificationService {
 
       const interventions = await prisma.intervention.findMany({
         where: {
-          date: {
+          dataProgrammata: {
             gte: tomorrow,
             lt: new Date(tomorrow.getTime() + 24 * 60 * 60 * 1000)
           },
-          status: { not: 'COMPLETED' }
+          stato: { not: 'COMPLETATO' }
         },
         include: {
-          client: true,
-          reminderSent: false // assumiamo campo da aggiungere
+          client: true
         }
       });
 
       for (const intervention of interventions) {
         await this.sendSMSReminder(intervention.id);
-        await this.sendEmailReminder(intervention.id);
+        await this.sendAppointmentConfirmation(intervention.id);
       }
 
       console.log(`Inviati ${interventions.length} promemoria`);
@@ -180,8 +179,8 @@ class NotificationService {
       await emailTransporter.sendMail({
         from: `"Hygienix" <${process.env.SMTP_USER}>`,
         to: intervention.client.email,
-        subject: `Report Intervento - ${new Date(intervention.date).toLocaleDateString('it-IT')}`,
-        html: `<p>Gentile ${intervention.client.name},</p><p>In allegato il report dell'intervento effettuato.</p>`,
+        subject: `Report Intervento - ${new Date(intervention.dataProgrammata).toLocaleDateString('it-IT')}`,
+        html: `<p>Gentile ${intervention.client.ragioneSociale},</p><p>In allegato il report dell'intervento effettuato.</p>`,
         attachments: [{
           filename: `report-intervento-${interventionId}.pdf`,
           content: pdfBuffer
