@@ -163,33 +163,4 @@ model AppointmentRequest {
   @@map("appointment_requests")
 }
 
-model Document {
-  id              String   @id @default(uuid())
-  clientId        String
-  nome            String
-  tipo            String   @default("CERTIFICATO")
-  fileUrl         String
-  dataDocumento   DateTime?
-  visibileCliente Boolean  @default(true)
-  note            String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  client          Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  @@map("documents")
-}
 
-model AppointmentRequest {
-  id              String   @id @default(uuid())
-  clientId        String
-  locationId      String?
-  dataPreferita   DateTime
-  oraPreferita    String?
-  tipoIntervento  String?
-  note            String?
-  stato           String   @default("RICHIESTO")
-  rispostaAdmin   String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  client          Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  @@map("appointment_requests")
-}
