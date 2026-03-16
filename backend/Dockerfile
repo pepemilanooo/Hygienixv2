@@ -2,15 +2,18 @@ FROM node:20-slim
 
 WORKDIR /app
 
-# Installa dipendenze
+# Copia prima i file necessari
 COPY package*.json ./
+COPY prisma ./prisma/
+
+# Installa dipendenze
 RUN npm ci
 
-# Copia codice
-COPY . .
-
-# Genera Prisma client
+# Genera Prisma client (dopo aver copiato i file prisma)
 RUN npx prisma generate
+
+# Copia il resto del codice
+COPY . .
 
 # Espone porta
 EXPOSE 5000
