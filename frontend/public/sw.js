@@ -1,5 +1,5 @@
 // Service Worker Hygienix - Offline First
-const CACHE_NAME = 'hygienix-v2-cache-v1';
+const CACHE_NAME = 'hygienix-v2-cache-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
