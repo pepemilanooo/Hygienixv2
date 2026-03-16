@@ -25,6 +25,7 @@ app.use('/api/upload', require('./routes/upload'));
 app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/reports', require('./routes/reports'));
 app.use('/api/notifications', require('./routes/notifications'));
+app.use('/api/customer', require('./routes/customerPortal'));
 
 app.use((err, req, res, next) => {
   console.error('Error:', err);

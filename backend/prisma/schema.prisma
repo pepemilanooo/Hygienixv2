@@ -39,11 +39,15 @@ model Client {
   telefonoReferente String?
   emailReferente  String?
   note            String?
+  portalPassword  String?
+  portalEnabled   Boolean  @default(false)
   attivo          Boolean  @default(true)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
   locations       Location[]
   interventions   Intervention[]
+  documents       Document[]
+  appointmentRequests AppointmentRequest[]
   @@map("clients")
 }
 
@@ -126,4 +130,35 @@ model Photo {
   createdAt     DateTime   @default(now())
   intervention  Intervention @relation(fields: [interventionId], references: [id], onDelete: Cascade)
   @@map("photos")
+}
+
+model Document {
+  id            String   @id @default(uuid())
+  clientId      String
+  nome          String
+  tipo          String   @default("CERTIFICATO") // CERTIFICATO, CONTRATTO, FATTURA, ALLEGATO
+  fileUrl       String
+  dataDocumento DateTime?
+  visibileCliente Boolean @default(true)
+  note          String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  client        Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  @@map("documents")
+}
+
+model AppointmentRequest {
+  id            String   @id @default(uuid())
+  clientId      String
+  locationId    String?
+  dataPreferita DateTime
+  oraPreferita  String?
+  tipoIntervento String?
+  note          String?
+  stato         String   @default("RICHIESTO") // RICHIESTO, CONFERMATO, RIFIUTATO
+  rispostaAdmin String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  client        Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  @@map("appointment_requests")
 }
