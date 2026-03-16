@@ -107,6 +107,7 @@ model Intervention {
   nomeFirmaCliente  String?
   reportPdfUrl      String?
   datiSopralluogo   String?
+  reminderSent      Boolean  @default(false)
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
   client            Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)

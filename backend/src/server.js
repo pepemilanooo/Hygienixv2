@@ -3,6 +3,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path');
 const fs = require('fs');
+const scheduler = require('./jobs/scheduler');
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ app.use('/api/interventions', require('./routes/interventions'));
 app.use('/api/upload', require('./routes/upload'));
 app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/reports', require('./routes/reports'));
+app.use('/api/notifications', require('./routes/notifications'));
 
 app.use((err, req, res, next) => {
   console.error('Error:', err);
@@ -30,4 +32,8 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log('Hygienix v2 running on port ' + PORT));
+app.listen(PORT, () => {
+  console.log('Hygienix v2 running on port ' + PORT);
+  // Avvia scheduler notifiche
+  scheduler.start();
+});
