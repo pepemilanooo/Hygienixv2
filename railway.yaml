@@ -1,0 +1,23 @@
+services:
+  backend:
+    root: backend
+    dockerfile: Dockerfile
+    healthcheck:
+      path: /api/health
+      timeout: 120
+    deploy:
+      restartPolicy:
+        type: on_failure
+        maxRetries: 10
+    
+  frontend:
+    root: frontend
+    buildCommand: npm run build
+    startCommand: npx serve -s dist -p $PORT
+    healthcheck:
+      path: /
+      timeout: 60
+    deploy:
+      restartPolicy:
+        type: on_failure
+        maxRetries: 5
